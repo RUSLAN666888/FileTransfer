@@ -1,0 +1,6 @@
+BasedOnStyle: LLVM
+Standard: c++20
+ColumnLimit: 180
+IndentWidth: 4
+PointerAlignment: Left
+BreakBeforeBraces: Allman
