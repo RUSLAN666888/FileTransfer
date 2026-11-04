@@ -8,9 +8,14 @@ find_package(Qt6 REQUIRED COMPONENTS Core Widgets)
 find_package(GTest REQUIRED)
 
 add_library(ft_core INTERFACE
+    #infra/time
     src/infra/time/i_clock.h
     src/infra/time/system_clock.h
     src/infra/time/fake_clock.h
+
+    #infra/crypto
+    src/infra/crypto/i_random_source.h
+    src/infra/crypto/fake_random.h
 )
 target_include_directories(ft_core INTERFACE ${CMAKE_SOURCE_DIR}/src)
 target_link_libraries(ft_core INTERFACE Qt6::Core)
@@ -22,6 +27,7 @@ enable_testing()
 
 add_executable(test_infra
     tests/test_clock.cpp
+    tests/test_random.cpp
 )
 target_link_libraries(test_infra PRIVATE ft_core GTest::gtest GTest::gtest_main)
 include(GoogleTest)
