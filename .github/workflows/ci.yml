@@ -33,7 +33,7 @@ jobs:
     - name: Install dependencies (Windows)
       if: runner.os == 'Windows'
       run: |
-        vcpkg install libsodium sqlite3 boost-asio gtest
+        vcpkg install libsodium sqlite3 boost-asio gtest --triplet x64-windows
 
     # ---------- Qt6 (for both OS) ----------
     - name: Install Qt6

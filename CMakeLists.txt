@@ -16,6 +16,7 @@ target_link_libraries(ft_core PUBLIC Qt6::Core)
 if(WIN32)
     find_package(unofficial-sodium CONFIG REQUIRED)
     target_link_libraries(ft_core PRIVATE unofficial-sodium::sodium)
+    target_include_directories(ft_core PRIVATE "${unofficial-sodium_DIR}/../../include")
 else()
     find_package(PkgConfig REQUIRED)
     pkg_check_modules(SODIUM REQUIRED libsodium)
@@ -23,9 +24,7 @@ else()
     target_include_directories(ft_core PRIVATE ${SODIUM_INCLUDE_DIRS})
 endif()
 
-add_executable(ft src/main.cpp
-    src/infra/crypto/sodium_random.h
-    src/infra/crypto/sodium_random.cpp)
+add_executable(ft src/main.cpp)
 target_link_libraries(ft PRIVATE ft_core Qt6::Widgets)
 
 enable_testing()
