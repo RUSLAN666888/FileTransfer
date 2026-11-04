@@ -7,20 +7,25 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(Qt6 REQUIRED COMPONENTS Core Widgets)
 find_package(GTest REQUIRED)
 
-add_library(ft_core INTERFACE
-    #infra/time
-    src/infra/time/i_clock.h
-    src/infra/time/system_clock.h
-    src/infra/time/fake_clock.h
-
-    #infra/crypto
-    src/infra/crypto/i_random_source.h
-    src/infra/crypto/fake_random.h
+add_library(ft_core STATIC
+    src/infra/crypto/sodium_random.cpp
 )
-target_include_directories(ft_core INTERFACE ${CMAKE_SOURCE_DIR}/src)
-target_link_libraries(ft_core INTERFACE Qt6::Core)
+target_include_directories(ft_core PUBLIC ${CMAKE_SOURCE_DIR}/src)
+target_link_libraries(ft_core PUBLIC Qt6::Core)
 
-add_executable(ft src/main.cpp)
+if(WIN32)
+    find_package(unofficial-sodium CONFIG REQUIRED)
+    target_link_libraries(ft_core PRIVATE unofficial-sodium::sodium)
+else()
+    find_package(PkgConfig REQUIRED)
+    pkg_check_modules(SODIUM REQUIRED libsodium)
+    target_link_libraries(ft_core PRIVATE ${SODIUM_LIBRARIES})
+    target_include_directories(ft_core PRIVATE ${SODIUM_INCLUDE_DIRS})
+endif()
+
+add_executable(ft src/main.cpp
+    src/infra/crypto/sodium_random.h
+    src/infra/crypto/sodium_random.cpp)
 target_link_libraries(ft PRIVATE ft_core Qt6::Widgets)
 
 enable_testing()
