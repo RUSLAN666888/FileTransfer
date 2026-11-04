@@ -26,7 +26,8 @@ class FakeClock final : public IClock
     void advance(std::chrono::steady_clock::duration d)
     {
         steady_ += d;
-        system_ += d;
+        system_ += std::chrono::duration_cast<std::chrono::system_clock::duration>(d);
+        ;
     }
 
     /// @brief Jumps the wall-clock only; `steadyNow()` is unaffected.
