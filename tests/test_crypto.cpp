@@ -1,5 +1,6 @@
 #include "infra/crypto/sodium_crypto.h"
 #include <array>
+#include <cstdint>
 #include <cstring>
 #include <gtest/gtest.h>
 

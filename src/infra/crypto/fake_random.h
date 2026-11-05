@@ -2,6 +2,7 @@
 #define INFRA_CRYPTO_FAKERANDOM_H
 
 #include "i_random_source.h"
+#include <cstddef>
 #include <cstdint>
 
 namespace infra

@@ -2,6 +2,8 @@
 #define INFRA_CRYPTO_SODIUMCRYPTO_H
 
 #include "infra/crypto/i_crypto.h"
+#include <cstddef>
+#include <cstdint>
 
 namespace infra
 {

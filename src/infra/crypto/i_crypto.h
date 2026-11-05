@@ -1,6 +1,7 @@
 #ifndef INFRA_CRYPTO_I_CRYPTO_H
 #define INFRA_CRYPTO_I_CRYPTO_H
 
+#include <cstddef>
 #include <cstdint>
 
 namespace infra

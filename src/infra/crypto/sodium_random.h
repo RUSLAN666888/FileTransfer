@@ -3,6 +3,9 @@
 
 #include "infra/crypto/i_random_source.h"
 
+#include <cstddef>
+#include <cstdint>
+
 namespace infra
 {
 

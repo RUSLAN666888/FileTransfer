@@ -1,5 +1,6 @@
 #include "infra/crypto/fake_random.h"
 #include <array>
+#include <cstdint>
 #include <gtest/gtest.h>
 
 TEST(FakeRandom, Deterministic)
