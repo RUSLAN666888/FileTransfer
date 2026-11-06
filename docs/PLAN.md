@@ -22,7 +22,7 @@ High-level milestones. Each milestone is a working, testable result — not a ta
 **Goal:** all external-world wrappers exist and are unit-tested.
 
 - Crypto primitives (keypair, sign, verify, hash, AEAD, random bytes) verified against known test vectors.
-- File system operations incl. safe open (no symlink following).
+- File system operations.
 - Clock abstraction (testable timers).
 - Keystore: keypair persisted on first launch; reload returns the same key.
 - Logging: console and in-memory implementations. Database logging is deferred until the schema exists (see Milestone 2.5).

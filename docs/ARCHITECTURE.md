@@ -32,7 +32,7 @@ graph TD
 
 | Layer | Responsible for |
 |---|---|
-| `infra` | Wrappers over libsodium, SQLite, fstream, clock, RNG, keystore, ILogger. `ICrypto` (primitives), `IRandomSource` (RNG) are declared here (`infra/crypto`) | 
+| `infra` | Wrappers over libsodium, SQLite, std::filesystem, clock, RNG, keystore, ILogger. `ICrypto` (primitives), `IRandomSource` (RNG) are declared here (`infra/crypto`) | 
 | `transport` | Byte stream to a peer: `ITransport`, `TcpTransport`, `UdpTransport`, `RelayTransport`, `TransportFactory` | 
 | `protocol` | Frames (`FrameCodec`), message structs, `ISecureChannel` / `NoiseSession` (decorator over `ITransport`), `DiscoveryPacket` (struct + `verify()`) | 
 | `domain` | Pure FSMs (`handle(Event) -> (State, vector<Effect>)`), `PeerId`, `Checkpoint`, `TransferId`, transition rules |

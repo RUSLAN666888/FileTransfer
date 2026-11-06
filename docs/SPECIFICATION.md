@@ -350,7 +350,6 @@ One: the LAN segment. Both endpoints are trusted. No intermediary.
 | **D**enial of service | Discovery flood | Per-source-IP token bucket; structural validation before signature; sequence/timestamp dedup | LAN-level DoS outside app control |
 | **D**enial of service | Handshake flood | Per-peer handshake limit (3 pending/min) | OS resource exhaustion |
 | **E**levation of privilege | Path traversal via filename | Sanitization: strip directories, reject `..`, reject reserved names, canonical path check | — |
-| **E**levation of privilege | Symlink overwrite | `O_NOFOLLOW` / `FILE_FLAG_OPEN_REPARSE_POINT` | — |
 
 ### Out of scope (LAN)
 

@@ -10,6 +10,7 @@ find_package(GTest REQUIRED)
 add_library(ft_core STATIC
     src/infra/crypto/sodium_random.cpp
     src/infra/crypto/sodium_crypto.cpp
+    src/infra/file_system/file_system.cpp
 )
 target_include_directories(ft_core PUBLIC ${CMAKE_SOURCE_DIR}/src)
 target_link_libraries(ft_core PUBLIC Qt6::Core)
@@ -35,6 +36,7 @@ add_executable(test_infra
     tests/test_random.cpp
     tests/test_crypto.cpp
     tests/test_result.cpp
+    tests/test_file_system.cpp
 )
 target_link_libraries(test_infra PRIVATE ft_core GTest::gtest GTest::gtest_main)
 include(GoogleTest)
