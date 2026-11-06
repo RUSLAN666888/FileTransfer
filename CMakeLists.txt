@@ -34,6 +34,7 @@ add_executable(test_infra
     tests/test_clock.cpp
     tests/test_random.cpp
     tests/test_crypto.cpp
+    tests/test_result.cpp
 )
 target_link_libraries(test_infra PRIVATE ft_core GTest::gtest GTest::gtest_main)
 include(GoogleTest)
