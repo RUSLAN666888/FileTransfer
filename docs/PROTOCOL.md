@@ -10,7 +10,7 @@ At most one active transfer per direction per session (maximum 2 concurrent). Th
 
 Every message (control or data) is carried in a single frame:
 
-   `[u32 length][u8 type][u64 transfer_id][payload][tag]`
+   `[u32 length][u8 type][u64 transfer_id][u8 nonce[24]][payload][tag]`
 
 - length — total frame length after this field (little-endian).
 - type — message type).
