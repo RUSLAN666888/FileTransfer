@@ -39,6 +39,8 @@ Discovery packet payload:
 - Sequence number (`u64`, monotonic per peer) — for deduplication and replay protection within the freshness window
 - Ed25519 signature over the payload (excluding the signature field itself)
 
+`libsecret`/`kwallet` and passphrase-encrypted files are out of scope for v1; if needed, they are a v2 candidate.
+
 Receivers must verify `SHA-256(public_key)` truncated to 128 bits equals `peer_id`, and that the Ed25519 signature verifies against `public_key`. A mismatch in either check → the packet is rejected.
 
 #### Peer Identity
@@ -46,7 +48,7 @@ Receivers must verify `SHA-256(public_key)` truncated to 128 bits equals `peer_i
 Peer identity must be cryptographically bound to the host to prevent spoofing and impersonation (a prerequisite for DoS mitigation).
 
 - On first launch, the application generates an **Ed25519 keypair**.
-- The private key is stored in an OS-protected keystore where available (DPAPI on Windows, `libsecret`/`kwallet` or an encrypted file with a user-supplied passphrase on Linux). The file MUST be created with `0600` permissions.
+- The private key is stored in a file under the app config directory (`~/.config/FileTransfer/key` on Linux, `%APPDATA%\FileTransfer\key` on Windows). In v1 the file is written with no OS-level protection: it is readable by any local user, and cloud sync / backups carry it in plaintext.
 - The **Peer ID** is derived as `SHA-256(public_key)` truncated to 128 bits. This provides a stable, self-certifying identifier that cannot be forged without the private key.
 
 **Wire format.** On the wire (discovery packets, `REGISTER`, handshake), the Peer ID is transmitted as **16 raw bytes**. The public key (32 bytes) is transmitted alongside it — a hash cannot be inverted, so the key must be supplied explicitly.
@@ -346,7 +348,7 @@ One: the LAN segment. Both endpoints are trusted. No intermediary.
 | **R**epudiation | Peer denies a transfer | SQLite transfer history with timestamps | No cryptographic non-repudiation |
 | **I**nformation disclosure | Passive LAN capture | Noise E2EE | Metadata (endpoints, timing) visible in LAN |
 | **I**nformation disclosure | Discovery metadata in broadcast | Unavoidable for UDP broadcast; minimal fields only | **Accepted:** peer_id, port, presence visible to LAN |
-| **I**nformation disclosure | Key exfiltration | OS keystore; `0600` file fallback | Host OS compromise |
+| **I**nformation disclosure | Key exfiltration | File written atomically; no OS protection in v1  | Any local user can read the key file; cloud sync and backups carry it in plaintext. Out of scope for the channel threat model; v1.1 adds 0600 / DPAPI. |
 | **D**enial of service | Discovery flood | Per-source-IP token bucket; structural validation before signature; sequence/timestamp dedup | LAN-level DoS outside app control |
 | **D**enial of service | Handshake flood | Per-peer handshake limit (3 pending/min) | OS resource exhaustion |
 | **E**levation of privilege | Path traversal via filename | Sanitization: strip directories, reject `..`, reject reserved names, canonical path check | — |
@@ -405,7 +407,7 @@ Compromise of the relay does not break E2EE.
 | **I**nformation disclosure | Relay reads payload | Noise E2EE; relay forwards opaque frames | — |
 | **I**nformation disclosure | Metadata visible to relay | **Accepted:** relay is semi-trusted; sees Peer IDs, timing, volume | Communication graph visible to relay |
 | **I**nformation disclosure | Metadata visible on WAN path | TLS 1.3 on the hop | Traffic analysis of TLS record sizes/timing |
-| **I**nformation disclosure | Key exfiltration | OS keystore; `0600` fallback | Host OS compromise |
+| **I**nformation disclosure | Key exfiltration | File written atomically; no OS protection in v1  | Any local user can read the key file; cloud sync and backups carry it in plaintext. Out of scope for the channel threat model; v1.1 adds 0600 / DPAPI. |
 | **D**enial of service | Registration flood | Per-PeerID and per-IP token bucket; Ed25519 required before registration | Relay capacity |
 | **D**enial of service | Registration slot occupation via replay | One registration per `peer_id`; relay does not replace live registration | **Accepted:** temporary DoS; no session can be established without the private key; peer recovers via reconnect |
 | **D**enial of service | Relay outage | Single relay, no failover | Single point of failure by design (v1) |
@@ -418,11 +420,12 @@ Compromise of the relay does not break E2EE.
 - Physical relay access.
 - Traffic analysis on the WAN path.
 - Relay logging policy, billing, abuse handling.
+- **Host compromise. If the host is compromised, the attacker reads source files and `.part` files directly, and reads the private key from the keystore. E2EE protects the channel, not the endpoints. Defending the key against a compromised host is meaningless for this application.**
 
 ## 4. Accepted Residual Risks (v1)
 
 1. **Metadata visible to relay** — relay is semi-trusted; sees Peer IDs, timing, volume. Out of scope to protect (candidate for research/v2).
-
+2. **Key file has no OS-level protection in v1.** The keypair is writtenvia `write_file_atomic` with no permissions (POSIX) and no encryption (Windows). Any local user can read the file; cloud sync and backups carry it in plaintext. This is a deliberate v1 trade-off: the keystore is a convenience, not a security boundary. v1.1 will add `0600` (POSIX) and DPAPI (Windows).
 3. **Registration DoS** — replay of `REGISTER` after the nonce window can occupy a `peer_id` slot temporarily. No confidentiality or integrity impact.
 4. **Discovery metadata in LAN** — UDP broadcast is readable by any LAN host. Unavoidable for LAN discovery.
 5. **No cryptographic non-repudiation** — history is stored locally; not a proof against a third party.

@@ -32,7 +32,7 @@ graph TD
 
 | Layer | Responsible for |
 |---|---|
-| `infra` | Wrappers over libsodium, SQLite, std::filesystem, clock, RNG, keystore, ILogger. `ICrypto` (primitives), `IRandomSource` (RNG) are declared here (`infra/crypto`) | 
+| `infra` | Wrappers over libsodium, SQLite, std::filesystem, clock, RNG, keystore, ILogger. `ICrypto` (primitives), `IRandomSource` (RNG), `Keypair` are declared here (`infra/crypto`). `IFileSystem` (`infra/file_system`), `IKeystore` (`infra/keystore`) are single implementations for all platforms in v1; per-OS keystore backends are deferred to v1.1. | 
 | `transport` | Byte stream to a peer: `ITransport`, `TcpTransport`, `UdpTransport`, `RelayTransport`, `TransportFactory` | 
 | `protocol` | Frames (`FrameCodec`), message structs, `ISecureChannel` / `NoiseSession` (decorator over `ITransport`), `DiscoveryPacket` (struct + `verify()`) | 
 | `domain` | Pure FSMs (`handle(Event) -> (State, vector<Effect>)`), `PeerId`, `Checkpoint`, `TransferId`, transition rules |
@@ -151,8 +151,7 @@ Removing any of these breaks layer isolation:
 
 - **transport**: `ITransport` (byte stream), `TransportFactory` (creation by kind). `IUdpTransport` is a transport-specific extension for discovery.
 - **protocol**: `ISecureChannel` (seal/open; `NoiseSession` is the implementation). `FrameCodec` is a concrete class, not an interface — it is a pure function with no substitution scenario.
-- **infra**: ICrypto` (primitives: hash, signatures, AEAD), `IRandomSource` (RNG; `SodiumRandom` for production, `FakeRandom` for tests), `IDatabase` + repository interfaces (`ITransferRepository`, `IPeerRepository`, `IBlocklistRepository`, `IHistoryRepository`, `ILogRepository`), `IFileSystem`, `IClock`, `IKeystore`, `ILogger`.
-- **app**: `EventBus` (mediator between managers).
+- **infra**: `ICrypto`, `IRandomSource`, `IFileSystem`, `IKeystore`,`IClock`, `ILogger`. Database and repository interfaces are added in Milestone 2.5 when the schema exists; their shape is not fixed here.- **app**: `EventBus` (mediator between managers).
 
 ### Adding a new interface
 
