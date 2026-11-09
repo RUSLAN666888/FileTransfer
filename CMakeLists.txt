@@ -15,6 +15,7 @@ add_library(ft_core STATIC
 
     src/domain/value/peer_id.cpp
     src/domain/value/transfer_id.cpp
+    src/domain/identity_service.cpp
 )
 target_include_directories(ft_core PUBLIC ${CMAKE_SOURCE_DIR}/src)
 target_link_libraries(ft_core PUBLIC Qt6::Core)
@@ -50,6 +51,7 @@ gtest_discover_tests(test_infra)
 add_executable(test_domain
     tests/domain/test_peer_id.cpp
     tests/domain/test_transfer_id.cpp
+    tests/domain/test_identity_service.cpp
 )
 target_link_libraries(test_domain PRIVATE ft_core GTest::gtest GTest::gtest_main)
 gtest_discover_tests(test_domain)

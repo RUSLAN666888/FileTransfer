@@ -18,6 +18,8 @@ namespace infra
 class ICrypto
 {
   public:
+    static constexpr std::size_t kSha256Bytes = 32;
+
     static constexpr std::size_t kEd25519PublicKeyBytes = 32;
     static constexpr std::size_t kEd25519PrivateKeyBytes = 64; // seed || pk
     static constexpr std::size_t kEd25519SeedBytes = 32;
