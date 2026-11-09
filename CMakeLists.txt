@@ -14,6 +14,7 @@ add_library(ft_core STATIC
     src/infra/keystore/file_keystore.cpp
 
     src/domain/peer_id.cpp
+    src/domain/transfer_id.cpp
 )
 target_include_directories(ft_core PUBLIC ${CMAKE_SOURCE_DIR}/src)
 target_link_libraries(ft_core PUBLIC Qt6::Core)
@@ -43,6 +44,7 @@ add_executable(test_infra
     tests/test_file_keystore.cpp
 
     tests/test_peer_id.cpp
+    tests/test_transfer_id.cpp
 )
 target_link_libraries(test_infra PRIVATE ft_core GTest::gtest GTest::gtest_main)
 include(GoogleTest)
