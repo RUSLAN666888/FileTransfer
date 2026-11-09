@@ -22,12 +22,23 @@ High-level milestones. Each milestone is a working, testable result — not a ta
 **Goal:** all external-world wrappers exist and are unit-tested.
 
 - Crypto primitives (keypair, sign, verify, hash, AEAD, random bytes) verified against known test vectors.
+  - Done: `ICrypto` (SHA-256, Ed25519 keypair/sign/verify, XChaCha20-Poly1305 AEAD) verified against known test vectors.
+  - Done: `IRandomSource` — `SodiumRandom` for production, `FakeRandom` for tests.
 - File system operations.
+  - Done: `IFileSystem` — `read_file`, `write_file_atomic` (`.tmp` + `rename`),
+    streaming `open_for_read` / `open_for_write` with `read_at` / `write_at` by offset.
+    Single `std::filesystem`-based implementation for all platforms.
 - Clock abstraction (testable timers).
+  - Done: `IClock`, `SystemClock`, `FakeClock`.
 - Keystore: keypair persisted on first launch; reload returns the same key.
+  - Done: `IKeystore`, `FileKeystore`. Keypair persisted via `write_file_atomic`;
+    reload returns the same keypair.
+  - Deferred to v1.1: OS-level protection (`0600` on POSIX, DPAPI on Windows).
 - Logging: console and in-memory implementations. Database logging is deferred until the schema exists (see Milestone 2.5).
+  - Deferred to Milestone 2.5: `ILogger` is introduced together with `LogService`
+    (database-backed) and the first consumer. `SPECIFICATION.md` requires database
+    logging, not plain-text files; a console logger has no place in a GUI application.
 
-**Done:** unit tests for crypto vectors, file ops, keystore round-trip.
 
 ---
 
