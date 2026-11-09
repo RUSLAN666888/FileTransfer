@@ -13,8 +13,8 @@ add_library(ft_core STATIC
     src/infra/file_system/file_system.cpp
     src/infra/keystore/file_keystore.cpp
 
-    src/domain/peer_id.cpp
-    src/domain/transfer_id.cpp
+    src/domain/value/peer_id.cpp
+    src/domain/value/transfer_id.cpp
 )
 target_include_directories(ft_core PUBLIC ${CMAKE_SOURCE_DIR}/src)
 target_link_libraries(ft_core PUBLIC Qt6::Core)
@@ -34,18 +34,22 @@ add_executable(ft src/main.cpp)
 target_link_libraries(ft PRIVATE ft_core Qt6::Widgets)
 
 enable_testing()
+include(GoogleTest)
 
 add_executable(test_infra
-    tests/test_clock.cpp
-    tests/test_random.cpp
-    tests/test_crypto.cpp
-    tests/test_result.cpp
-    tests/test_file_system.cpp
-    tests/test_file_keystore.cpp
-
-    tests/test_peer_id.cpp
-    tests/test_transfer_id.cpp
+    tests/infra/test_clock.cpp
+    tests/infra/test_random.cpp
+    tests/infra/test_crypto.cpp
+    tests/infra/test_result.cpp
+    tests/infra/test_file_system.cpp
+    tests/infra/test_file_keystore.cpp
 )
 target_link_libraries(test_infra PRIVATE ft_core GTest::gtest GTest::gtest_main)
-include(GoogleTest)
 gtest_discover_tests(test_infra)
+
+add_executable(test_domain
+    tests/domain/test_peer_id.cpp
+    tests/domain/test_transfer_id.cpp
+)
+target_link_libraries(test_domain PRIVATE ft_core GTest::gtest GTest::gtest_main)
+gtest_discover_tests(test_domain)

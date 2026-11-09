@@ -1,7 +1,7 @@
 #ifndef DOMAIN_CHECKPOINT_H
 #define DOMAIN_CHECKPOINT_H
 
-#include "domain/transfer_id.h"
+#include "domain/value/transfer_id.h"
 
 #include <cstdint>
 
