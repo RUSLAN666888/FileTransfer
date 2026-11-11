@@ -63,6 +63,12 @@ Each transfer checkpoint (stored in the database) is identified by `transfer_id`
 
 On crash, at most 32 chunks (32 MiB at 1 MiB chunk size) are re-sent. The checkpoint is never written before the corresponding chunk is durably written to disk, so `chunk_offset` always points to a chunk boundary that is safe to resume from.
 
+On graceful shutdown (user closes the window), the current in-memory
+checkpoint is flushed to the database before the database is closed, so
+the next start resumes from the exact position. On a crash (power loss,
+kill -9), the last persisted checkpoint is used and up to 32 chunks may
+be re-sent; this is the same bound as the periodic checkpoint policy.
+
 **File integrity.** The final file hash is verified by the receiver after the last chunk (before renaming `.part`). The hash algorithm is negotiated in `HELLO`. On mismatch, the transfer is marked `FAILED` and the `.part` file is retained for inspection.
 
 
@@ -148,8 +154,9 @@ One FSM for every `tranfer_id`. States and transitions are the same for sender a
 
 ## Scope
 
-The Session FSM describes the session lifecycle from "no connection" to "closed". It is transport-agnostic: LAN (TCP) and WAN (Relay) use the same Session FSM, because `ITransport` abstracts the byte stream.
-
+The Session FSM describes the session lifecycle from "no connection" to
+"closed". It is transport-agnostic: LAN (TCP) and WAN (Relay) use the same
+Session FSM, because `ITransport` abstracts the byte stream.
 
 ## States
 
@@ -161,22 +168,42 @@ The Session FSM describes the session lifecycle from "no connection" to "closed"
 | `CLOSING` | Close initiated (user, `ERROR`, PING timeout, transport error). |
 | `CLOSED` | Session closed, resources released. |
 
+## Close reasons
+
+`SessionCloseReason` is carried in the `SessionClosing` effect:
+
+| Reason | Meaning | `TransferFsm` reaction |
+|---|---|---|
+| `UserClosed` | User pressed "Close session". | `CANCELLED` |
+| `PingTimeout` | Liveness timer expired; peer is unreachable. | `FAILED` |
+| `ProtocolViolation` | Peer sent an invalid frame or event. | `FAILED` |
+| `TransportError` | Transport reported `CONNECTION_LOST`. | `FAILED` |
+| `HandshakeFailed` | Handshake failed, user rejected, or handshake timed out. | `FAILED` (no active transfers exist in `HANDSHAKING`) |
+
 ## Transitions
 
 | From | Event | To | Action |
 |---|---|---|---|
 | `IDLE` | user initiates connect / incoming request accepted | `HANDSHAKING` | start Noise handshake |
 | `HANDSHAKING` | handshake OK + user confirmed | `ESTABLISHED` | start liveness timer, accept transfers |
-| `HANDSHAKING` | handshake failed / user rejected / timeout | `CLOSING` | send `ERROR{AUTH_FAILED}` if possible |
+| `HANDSHAKING` | handshake failed / user rejected / timeout | `CLOSING` | emit `SessionClosing{HandshakeFailed}` |
 | `ESTABLISHED` | recv `PING` | `ESTABLISHED` | send `PONG` |
 | `ESTABLISHED` | recv `PONG` | `ESTABLISHED` | reset liveness timer |
-| `ESTABLISHED` | PING timeout | `CLOSING` | close transport |
-| `ESTABLISHED` | recv `ERROR{PROTOCOL_VIOLATION}` | `CLOSING` | close transport |
-| `ESTABLISHED` | user closes session | `CLOSING` | send `ERROR{USER_CLOSED}` if possible |
-| `ESTABLISHED` | transport error (`CONNECTION_LOST`) | `CLOSING` | — |
-| `CLOSING` | transport closed | `CLOSED` | notify  active transfer → `FAILED` |
+| `ESTABLISHED` | PING timeout | `CLOSING` | close transport; emit `SessionClosing{PingTimeout}` |
+| `ESTABLISHED` | recv `ERROR{PROTOCOL_VIOLATION}` | `CLOSING` | close transport; emit `SessionClosing{ProtocolViolation}` |
+| `ESTABLISHED` | user closes session | `CLOSING` | emit `SessionClosing{UserClosed}` |
+| `ESTABLISHED` | transport error (`CONNECTION_LOST`) | `CLOSING` | emit `SessionClosing{TransportError}` |
+| `CLOSING` | transport closed | `CLOSED` | — |
 | `CLOSED` | — | — | terminal |
 
+## Effect ordering
+
+Effects from a single transition are executed in the order returned:
+
+1. `SendError{...}` (if any) — best-effort, transport may already be broken.
+2. `CloseTransport` (if any).
+3. `NotifyActiveTransfers{close_reason}` — always last, so `TransferFsm`
+   sees the final reason after the transport is already being torn down.
 
 # Relay State Machine
 
