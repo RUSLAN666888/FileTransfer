@@ -1,7 +1,7 @@
 #ifndef DOMAIN_SESSION_FSM_H
 #define DOMAIN_SESSION_FSM_H
 
-#pragma once
+#include "domain/value/session_close_reason.h"
 
 #include <utility>
 #include <vector>
@@ -16,14 +16,6 @@ enum class SessionState
     Established,
     Closing,
     Closed,
-};
-
-enum class SessionCloseReason
-{
-    UserClosed,
-    PingTimeout,
-    ProtocolViolation,
-    TransportError,
 };
 
 enum class SessionEventType

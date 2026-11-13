@@ -17,6 +17,7 @@ add_library(ft_core STATIC
     src/domain/value/transfer_id.cpp
     src/domain/identity_service.cpp
     src/domain/fsm/session_fsm.cpp
+    src/domain/fsm/transfer_fsm.cpp
 )
 target_include_directories(ft_core PUBLIC ${CMAKE_SOURCE_DIR}/src)
 target_link_libraries(ft_core PUBLIC Qt6::Core)
